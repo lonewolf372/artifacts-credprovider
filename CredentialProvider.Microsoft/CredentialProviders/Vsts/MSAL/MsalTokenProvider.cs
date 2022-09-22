@@ -85,16 +85,27 @@ namespace NuGetCredentialProvider.CredentialProviders.Vsts
             return accounts
                 .Select(account => {
                     int matchScore = 0;
-                    if (authorityTenant.HasValue && Guid.TryParse(account.HomeAccountId.TenantId, out Guid accountTenant))
-                    {
-                        if (authorityTenant.Value == accountTenant)
+                    if (Guid.TryParse(account.HomeAccountId.TenantId, out Guid accountTenant)) {
+                        if (authorityTenant.HasValue)
                         {
-                            matchScore += 1;
+                            if (authorityTenant.Value == accountTenant)
+                            {
+                                matchScore += 1;
+                            }
+                            // for some reason there are two MSA tenants?
+                            else if (authorityTenant.Value == AuthUtil.MsaAuthorityTenant && accountTenant == AuthUtil.MsaAccountTenant)
+                            {
+                                matchScore += 1;
+                            }
                         }
-                        // for some reason there are two MSA tenants?
-                        else if (authorityTenant.Value == AuthUtil.MsaAuthorityTenant && accountTenant == AuthUtil.MsaAccountTenant)
+                        else
                         {
-                            matchScore += 1;
+                            // if the authority is not provided, that probably means it's not AAD-backed,
+                            // but rather it is MSA-backed.
+                            if (accountTenant == AuthUtil.MsaAccountTenant)
+                            {
+                                matchScore += 1;
+                            }
                         }
                     }
 

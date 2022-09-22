@@ -99,5 +99,15 @@ namespace CredentialProvider.Microsoft.Tests.CredentialProviders.Vsts
                 }
             }
         }
+
+        [TestMethod]
+        public void UnknownAuthorityTenantPrefersMsa()
+        {
+            foreach (var accounts in Permutations)
+            {
+                var sorted = MsalTokenProvider.PrioritizeAccounts(accounts, null, null);
+                Assert.AreEqual(sorted[0].Item1.Username, MsaUser.Username);
+            }
+        }
     }
 }

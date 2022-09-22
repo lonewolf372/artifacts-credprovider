@@ -83,6 +83,8 @@ namespace NuGetCredentialProvider.CredentialProviders.Vsts
             var aadBase = UsePpeAadUrl(uri) ? "https://login.windows-ppe.net" : "https://login.microsoftonline.com";
             logger.Verbose(string.Format(Resources.AADAuthorityNotFound, aadBase));
 
+            // WAM gets confused about the Common tenant, so we'll just assume that if there isn't
+            // a tenant GUID provided, that it's a consumer tenant.
             var tenant = EnvUtil.MsalEnabled() ? MsaAuthorityTenant.ToString() : CommonTenant;
             return new Uri($"{aadBase}/{tenant}");
         }

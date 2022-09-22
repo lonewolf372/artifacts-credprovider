@@ -95,7 +95,11 @@ if ($Version.StartsWith("0.")) {
     $zipFile = "Microsoft.NetCore2.NuGet.CredentialProvider.zip"
 }
 if ($InstallNet6 -eq $True) {
-    $zipFile = "Microsoft.Net6.NuGet.CredentialProvider.zip"
+    if ([environment]::OSVersion.Platform -eq 'Win32NT') {
+        $zipFile = "Microsoft.Net6-Windows.NuGet.CredentialProvider.zip"
+    } else {
+        $zipFile = "Microsoft.Net6.NuGet.CredentialProvider.zip"
+    }
 }
 if ($AddNetfx -eq $True) {
     $zipFile = "Microsoft.NuGet.CredentialProvider.zip"

@@ -3,10 +3,12 @@ parameters:
   nuspecProperties: ''
 
 steps:
+# We need the SDK because the runtime does not include Microsoft.WindowsDesktop.App
+# https://stackoverflow.com/questions/71040894/docker-the-framework-microsoft-windowsdesktop-app-version-3-1-0-x64-was
 - task: UseDotNet@2
-  displayName: Install .NET Core 3.1 runtime
+  displayName: Install .NET Core 3.1 sdk
   inputs:
-    packageType: runtime
+    packageType: sdk
     version: 3.1.x
 
 - task: UseDotNet@2
@@ -71,13 +73,23 @@ steps:
 - script: dotnet publish CredentialProvider.Microsoft/CredentialProvider.Microsoft.csproj --no-build --framework net6.0 --configuration $(BuildConfiguration)
   displayName: dotnet publish net6.0
 
+- script: dotnet publish CredentialProvider.Microsoft/CredentialProvider.Microsoft.csproj --no-build --framework net6.0-windows10.0.17763.0 --configuration $(BuildConfiguration)
+  displayName: dotnet publish net6.0-windows10.0.17763.0
+
 # Create .NET 6.0 release for netcore users
 - task: CopyFiles@2
   displayName: Copy net6.0 files into tarball
   inputs:
     sourceFolder: '$(Build.SourcesDirectory)\CredentialProvider.Microsoft\bin\$(BuildConfiguration)\net6.0\publish\'
     contents: '**\*'
-    targetFolder: '$(Build.ArtifactStagingDirectory)\tarball\plugins\netcore\CredentialProvider.Microsoft\'
+    targetFolder: '$(Build.ArtifactStagingDirectory)\tarball-net6.0\plugins\netcore\CredentialProvider.Microsoft\'
+    cleanTargetFolder: true
+- task: CopyFiles@2
+  displayName: Copy net6.0 files into tarball
+  inputs:
+    sourceFolder: '$(Build.SourcesDirectory)\CredentialProvider.Microsoft\bin\$(BuildConfiguration)\net6.0-windows10.0.17763.0\publish\'
+    contents: '**\*'
+    targetFolder: '$(Build.ArtifactStagingDirectory)\tarball-net6.0-windows10.0.17763.0\plugins\netcore\CredentialProvider.Microsoft\'
     cleanTargetFolder: true
 
 - task: CopyFiles@2
@@ -87,28 +99,54 @@ steps:
       LICENSE
       CredentialProvider.Microsoft\EULA_Microsoft Visual Studio Team Services Credential Provider.docx
       CredentialProvider.Microsoft\ThirdPartyNotices.txt
-    targetFolder: '$(Build.ArtifactStagingDirectory)\tarball\'
+    targetFolder: '$(Build.ArtifactStagingDirectory)\tarball-net6.0\'
+    flattenFolders: true
+- task: CopyFiles@2
+  displayName: Copy license files into tarball
+  inputs:
+    contents: |
+      LICENSE
+      CredentialProvider.Microsoft\EULA_Microsoft Visual Studio Team Services Credential Provider.docx
+      CredentialProvider.Microsoft\ThirdPartyNotices.txt
+    targetFolder: '$(Build.ArtifactStagingDirectory)\tarball-net6.0-windows10.0.17763.0\'
     flattenFolders: true
 
 - task: ArchiveFiles@2
   displayName: Create net6.0 tarball
   inputs:
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)\tarball\'
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)\tarball-net6.0\'
     includeRootFolder: false
     archiveType: 'tar'
     tarCompression: 'gz'
     archiveFile: '$(Build.ArtifactStagingDirectory)\$(BuildConfiguration)\Microsoft.Net6.NuGet.CredentialProvider.tar.gz'
     replaceExistingArchive: true
+- task: ArchiveFiles@2
+  displayName: Create net6.0-windows10.0.17763.0 tarball
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)\tarball-net6.0-windows10.0.17763.0\'
+    includeRootFolder: false
+    archiveType: 'tar'
+    tarCompression: 'gz'
+    archiveFile: '$(Build.ArtifactStagingDirectory)\$(BuildConfiguration)\Microsoft.Net6-Windows.NuGet.CredentialProvider.tar.gz'
+    replaceExistingArchive: true
 
 - task: ArchiveFiles@2
   displayName: Create net6.0 zip
   inputs:
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)\tarball\'
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)\tarball-net6.0\'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)\$(BuildConfiguration)\Microsoft.Net6.NuGet.CredentialProvider.zip'
     replaceExistingArchive: true
-
+- task: ArchiveFiles@2
+  displayName: Create net6.0-windows10.0.17763.0 zip
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)\tarball-net6.0-windows10.0.17763.0\'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)\$(BuildConfiguration)\Microsoft.Net6-Windows.NuGet.CredentialProvider.zip'
+    replaceExistingArchive: true
+    
 # Clean target folder and create netcore 3.1 and netfx releases
 - script: dotnet publish CredentialProvider.Microsoft/CredentialProvider.Microsoft.csproj --no-build --framework netcoreapp3.1 --configuration $(BuildConfiguration)
   displayName: dotnet publish netcoreapp3.1

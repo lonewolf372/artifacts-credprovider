@@ -2,6 +2,25 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <CredentialProviderVersion>1.0.0</CredentialProviderVersion>
-    <TargetFrameworks>netcoreapp3.1;net461;net6.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net461;net6.0;net6.0-windows10.0.17763.0</TargetFrameworks>
+    <Broker>NONE</Broker>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <Broker>NONE</Broker>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-windows10.0.17763.0'">
+    <Broker>PLAIN</Broker>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <Broker>DESKTOP</Broker>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net461'">
+    <Broker>DESKTOP</Broker>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);BROKER_$(Broker)</DefineConstants>
   </PropertyGroup>
 </Project>

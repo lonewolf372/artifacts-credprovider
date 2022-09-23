@@ -85,7 +85,11 @@ namespace NuGetCredentialProvider.CredentialProviders.Vsts
 
             // WAM gets confused about the Common tenant, so we'll just assume that if there isn't
             // a tenant GUID provided, that it's a consumer tenant.
+#if BROKER_PREVIEW
+            var tenant = CommonTenant;
+#else            
             var tenant = EnvUtil.MsalEnabled() ? MsaAuthorityTenant.ToString() : CommonTenant;
+#endif       
             return new Uri($"{aadBase}/{tenant}");
         }
 

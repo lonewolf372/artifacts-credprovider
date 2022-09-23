@@ -44,7 +44,7 @@ for %%I in ("netcoreapp3.1","net461","net6.0-windows10.0.17763.0","net6.0") DO (
     del /q "!UserProfile!\AppData\Local\MicrosoftCredentialProvider\*.dat" 2>NUL
     del /q "%NUGET_CREDENTIALPROVIDER_MSAL_FILECACHE_LOCATION%" 2>NUL
     echo Testing %%I with NUGET_CREDENTIALPROVIDER_MSAL_ENABLED=!NUGET_CREDENTIALPROVIDER_MSAL_ENABLED! NUGET_CREDENTIALPROVIDER_MSAL_ALLOW_BROKER=!NUGET_CREDENTIALPROVIDER_MSAL_ALLOW_BROKER!
-    dotnet run -f %%I --project CredentialProvider.Microsoft\CredentialProvider.Microsoft.csproj -- -N -U !TEST_FEED! -V Debug -R > test.%%I.%NUGET_CREDENTIALPROVIDER_MSAL_ENABLED%.%NUGET_CREDENTIALPROVIDER_MSAL_ALLOW_BROKER%.log
+    dotnet run --no-restore --no-build -f %%I --project CredentialProvider.Microsoft\CredentialProvider.Microsoft.csproj -- -N -U !TEST_FEED! -V Debug -R > test.%%I.%NUGET_CREDENTIALPROVIDER_MSAL_ENABLED%.%NUGET_CREDENTIALPROVIDER_MSAL_ALLOW_BROKER%.log
     IF !ERRORLEVEL! NEQ 0 (
         echo "Previous command execution failed: !ERRORLEVEL!"
         exit /b !ERRORLEVEL!

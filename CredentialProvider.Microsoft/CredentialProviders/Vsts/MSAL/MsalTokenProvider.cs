@@ -8,6 +8,9 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client;
+#if BROKER_PREVIEW
+using Microsoft.Identity.Client.Broker;
+#endif
 #if BROKER_DESKTOP
 using Microsoft.Identity.Client.Desktop;
 #endif
@@ -252,14 +255,17 @@ namespace NuGetCredentialProvider.CredentialProviders.Vsts
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-#if BROKER_DESKTOP
+#if BROKER_PREVIEW
+                    this.Logger.Verbose($"MSAL using WithBrokerPreview");
+                    publicClientBuilder = publicClientBuilder.WithBrokerPreview();
+#elif BROKER_DESKTOP
                     this.Logger.Verbose($"MSAL using WithWindowsBroker");
                     publicClientBuilder = publicClientBuilder.WithWindowsBroker();
 #elif BROKER_PLAIN
                     this.Logger.Verbose($"MSAL using WithBroker");
                     publicClientBuilder = publicClientBuilder.WithBroker();
 #else
-                    this.Logger.Warning("Don't run net6.0 on windows; run net6.0-windows.");
+                    this.Logger.Warning("WHAT IS GOING ON? :) ");
 #endif
 
                     //  needed for WAM
@@ -267,10 +273,10 @@ namespace NuGetCredentialProvider.CredentialProviders.Vsts
 
                     publicClientBuilder = publicClientBuilder.WithWindowsBrokerOptions(new WindowsBrokerOptions() {
                         HeaderText = "Azure DevOps Artifacts",
-#if !BROKER_PREVIEW
+// #if !BROKER_PREVIEW
                         // System.NotImplementedException: The new broker implementation does not yet support Windows account discovery (ListWindowsWorkAndSchoolAccounts option)
                         ListWindowsWorkAndSchoolAccounts = true,
-#endif
+// #endif
                     });
                 }
                 else

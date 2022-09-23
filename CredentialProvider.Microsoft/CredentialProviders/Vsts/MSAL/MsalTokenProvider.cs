@@ -8,12 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client;
-#if BROKER_PREVIEW
 using Microsoft.Identity.Client.Broker;
-#endif
-#if BROKER_DESKTOP
-using Microsoft.Identity.Client.Desktop;
-#endif
 using Microsoft.Identity.Client.Extensions.Msal;
 using NuGetCredentialProvider.Logging;
 using NuGetCredentialProvider.Util;
@@ -255,28 +250,17 @@ namespace NuGetCredentialProvider.CredentialProviders.Vsts
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-#if BROKER_PREVIEW
                     this.Logger.Verbose($"MSAL using WithBrokerPreview");
                     publicClientBuilder = publicClientBuilder.WithBrokerPreview();
-#elif BROKER_DESKTOP
-                    this.Logger.Verbose($"MSAL using WithWindowsBroker");
-                    publicClientBuilder = publicClientBuilder.WithWindowsBroker();
-#elif BROKER_PLAIN
-                    this.Logger.Verbose($"MSAL using WithBroker");
-                    publicClientBuilder = publicClientBuilder.WithBroker();
-#else
-                    this.Logger.Warning("WHAT IS GOING ON? :) ");
-#endif
 
                     //  needed for WAM
                     publicClientBuilder = publicClientBuilder.WithParentActivityOrWindow(() => GetConsoleOrTerminalWindow());
 
                     publicClientBuilder = publicClientBuilder.WithWindowsBrokerOptions(new WindowsBrokerOptions() {
                         HeaderText = "Azure DevOps Artifacts",
-// #if !BROKER_PREVIEW
                         // System.NotImplementedException: The new broker implementation does not yet support Windows account discovery (ListWindowsWorkAndSchoolAccounts option)
-                        ListWindowsWorkAndSchoolAccounts = true,
-// #endif
+                        // https://github.com/AzureAD/microsoft-authentication-library-for-dotnet/pull/3602
+                        // ListWindowsWorkAndSchoolAccounts = true,
                     });
                 }
                 else
